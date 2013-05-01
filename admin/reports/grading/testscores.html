@@ -3,11 +3,11 @@
 <html>
 <head>
 <!--[CRM BEGIN]-->
-<title>Test Scores</title>
+<title>SOL Test Scores</title>
 <meta name="author" content="Matt Walters" />
-<meta name="description" content="Find test scores by test." />
+<meta name="description" content="Find SOL test scores by test." />
 <meta name="version" content="12.12" />
-<meta name="reportname" content="Test Scores" />
+<meta name="reportname" content="SOL Test Scores" />
 <!--[CRM END]-->
 <link href="/images/css/screen.css" rel="stylesheet" media="screen">
 <link href="/images/css/print.css" rel="stylesheet" media="print">
@@ -64,17 +64,14 @@ border-width:2px;
 			});
 			return false; //override regular form submission
 		});
-		
-		function getTestScores(testId) {
-			$.get("testScoresData.html?testId=" + testId, function(data) {
-				$('#selectedScore').empty();
-				$('#selectedScore').append(data);
-			});
-		}
 		$('#selectedTest').change(function() {
-			testId = $('#selectedTest :selected').val();
-			if (testId) getTestScores(testId);
-			if(!testId) $('#selectedScore').empty().append('<option></option>').attr("value", "").text("Select a test...");
+			var arr = [];
+			$('#selectedTest :selected').each(function() {
+				arr.push($(this).val(););
+			});
+			$('#test').val(
+				arr.join(",");
+			);
 		});
 	});//end jquery.ready
 	  
@@ -144,13 +141,16 @@ Test Scores
 			<tr>
 				<td class="bold">Select a test:</td>
 				<td>
-					<select name="test" id="selectedTest">
+					<select name="selectedTest" id="selectedTest">
 						<option value="">Select a Test</option>
 						~[tlist_sql;
 							SELECT
 								t.id,
 								t.name
 							FROM test t
+							JOIN testscore ts ON ts.testid = t.id
+							WHERE
+								lower(ts.name) = 'passed'
 							ORDER BY t.name ASC
 						;]
 							<option value="~(id)">~(name)</option>
@@ -158,15 +158,8 @@ Test Scores
 					</select>
 				</td>
 			</tr>
-			<tr>
-				<td class="bold">Select a score:</td>
-				<td>
-					<select name="score" id="selectedScore">
-						<option value="">Select a score</option>
-					</select>
-				</td>
-			</tr>
 		</table>
+		<input type="text" name ="test" value=""></input>
 		<input type="hidden" name="dothisfor" value="selected" />
 		<input type="hidden" name="action" value="getresults" />
 		<input type="hidden" name="dateformat" value="~[gpv:dateformat]" />
@@ -224,8 +217,8 @@ $j('#sectionSelect').change(function() {
 		JOIN testscore ts ON ts.id = sts.testscoreid
 		JOIN test t ON t.id = st.testid
 		WHERE
-			t.id = ~[gpv:test]
-			AND ts.id = ~[gpv:score]
+			t.id IN (~[gpv:test])
+			AND lower(ts.name) = 'passed'
 			~[if.~[gpv:students]=selected]AND s.id IN (~[f.table_info;table=students;dothisfor=currentsel;fn=value;field=id;delim=cma]-1)
 			[else]AND s.id = ~[gpv:students]
 			[/if]
