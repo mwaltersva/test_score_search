@@ -1,0 +1,10 @@
+~[tlist_sql;
+SELECT
+    ts.id,
+    ts.name
+FROM testscore ts
+WHERE
+    ts.testid = ~[gpv:testid]
+;]
+<option value="~(id)">~(name)</option>
+[/tlist_sql]
